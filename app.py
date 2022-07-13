@@ -1,7 +1,7 @@
-from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy 
-from flask_marshmallow import Marshmallow 
-from flask_cors import CORS 
+from flask import Flask, request, jsonify #framework, what everything else sits on
+from flask_sqlalchemy import SQLAlchemy #allows sqlalchemy to work in flask, database structuring language
+from flask_marshmallow import Marshmallow #allows marshmallow to work in flask, serialization => takes an object from one language and changes it to another
+from flask_cors import CORS #gives other programs permission to access your api
 import os 
 
 app = Flask(__name__)
@@ -13,8 +13,8 @@ db = SQLAlchemy(app) #wraps our app, inheriting from app
 ma = Marshmallow(app) #wraps our app
 CORS(app) #wraps our app
 
-class Book(db.Model): #inheriting from db class model
-    id = db.Column(db.Integer, primary_key=True) #defines a column in the book model that is specific to the ID, we will define the data type we want in SQL.
+class Book(db.Model): #inheriting from db class model (SQLAlchemy docs - Declaring Models(https://flask-sqlalchemy.palletsprojects.com/en/2.x/models/))
+    id = db.Column(db.Integer, primary_key=True) #defines a column in the book model that is specific to the ID, we will define the data type we want in SQL. When object is set to primary key, it does not need to go in the constructor
     title = db.Column(db.String, nullable=False) #defining properties of our book, nullable allows user to include something or not based on true or false
     author = db.Column(db.String, nullable=False)
     review = db.Column(db.String, nullable=True) #Allows the user to now leave a review, since nullable is true 
