@@ -17,8 +17,8 @@ class Book(db.Model): #inheriting from db class model (SQLAlchemy docs - Declari
     id = db.Column(db.Integer, primary_key=True) #defines a column in the book model that is specific to the ID, we will define the data type we want in SQL. When object is set to primary key, it does not need to go in the constructor
     title = db.Column(db.String, nullable=False) #defining properties of our book, nullable allows user to include something or not based on true or false
     author = db.Column(db.String, nullable=False)
-    review = db.Column(db.String, nullable=True) #Allows the user to now leave a review, since nullable is true 
-    genre = db.Column(db.String, nullable=False) #Tells user they need to include genre, since nullable is false
+    review = db.Column(db.String, nullable=True) #Allows the user to now leave a review or not , since nullable is true 
+    genre = db.Column(db.String, nullable=True) #Tells user they need to include genre, since nullable is false
 
     def __init__(self, title, author, review, genre): #constructor class, this is how our books will look when created (blueprint), and they will follow the rules we set 
         self.title = title #instance of title
@@ -46,6 +46,12 @@ def add_book(): #happens everytime user sends a request, like a call back functi
     db.session.commit()#committing the changes to actually be done, like sving the changes 
 
     return jsonify('You have added a new book.') #tells the user they have added a new book 
+
+@app.route('/book/get/<id>', methods=['GET']) #return one book end point, referenced Id to grab the requeted book
+def get_one_book(id): #
+    book = db.session.query(Book).filter(Book.id == id).first() #querying out book class and filtering out the ID that matches what the user provided
+    return jsonify(book_schema.dump(book)) #returning the book that matched the ID, used .dump to make book_schema iterable
+
 
 @app.route('/book/get', methods=['GET']) #receive all the books added to databse
 def get_books():
