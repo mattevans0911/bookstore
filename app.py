@@ -16,9 +16,9 @@ CORS(app) #wraps our app
 class Book(db.Model): #inheriting from db class model (SQLAlchemy docs - Declaring Models(https://flask-sqlalchemy.palletsprojects.com/en/2.x/models/))
     id = db.Column(db.Integer, primary_key=True) #defines a column in the book model that is specific to the ID, we will define the data type we want in SQL. When object is set to primary key, it does not need to go in the constructor
     title = db.Column(db.String, nullable=False) #defining properties of our book, nullable allows user to include something or not based on true or false
-    author = db.Column(db.String, nullable=False)
+    author = db.Column(db.String, nullable=False) #Tells user they need to include author, since nullable is false
     review = db.Column(db.String, nullable=True) #Allows the user to now leave a review or not , since nullable is true 
-    genre = db.Column(db.String, nullable=True) #Tells user they need to include genre, since nullable is false
+    genre = db.Column(db.String, nullable=True) 
 
     def __init__(self, title, author, review, genre): #constructor class, this is how our books will look when created (blueprint), and they will follow the rules we set 
         self.title = title #instance of title
@@ -32,6 +32,54 @@ class BookSchema(ma.Schema): #Schema, part of the serialization process, this is
 
 book_schema = BookSchema() #Instantiating our class
 multiple_book_schema = BookSchema(many=True) #allowing schema for more than one book
+
+class Magazine(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String, nullable=False)
+    publication = db.Column(db.String, nullable=False)
+
+
+    def __init__(self, title, publication):
+        self.title = title
+        self.publication = publication
+
+class MagSchema(ma.Schema):
+    class Meta:
+        fields = ('id', 'title', 'publication')
+
+mag_schema = MagSchema()
+multiple_magazine_schema = MagSchema(many=True)
+
+@app.route('/magazine/add', methods=['POST'])
+def add_magazine():
+    mag_data = request.get_json()
+    title = mag_data.get('title')
+    publication = mag_data.get('publication')
+
+    new_mag = Magazine(title, publication)
+    db.session.add(new_mag)
+    db.session.commit()
+
+    return jsonify('You have added a new magazine')
+
+@app.route('/magazine/get', methods=['GET'])
+def get_magazine():
+    magazines = db.session.query(Magazine).all()
+    return jsonify(multiple_magazine_schema.dump(magazines))
+
+@app.route('/magazine/get/<id>', methods=['GET'])
+def get_one_magazine(id):
+    magazine = db.session.query(Magazine).filter(Magazine.id == id).first()
+    return jsonify(mag_schema.dump(magazine))
+
+@app.route('/magazine/delete/<id>', methods=['DELETE'])
+def delete_mag(id):
+    magazine = db.session.query(Magazine).filter(Magazine.id == id).first()
+    db.session.delete(magazine)
+    db.session.commit()
+
+    return jsonify(f"You have deleted magazine {id}")
+
 
 @app.route('/book/add', methods=['POST']) #creating a route decorator end point ('/book/add')
 def add_book(): #happens everytime user sends a request, like a call back function when a request is sent to this end point
@@ -48,8 +96,8 @@ def add_book(): #happens everytime user sends a request, like a call back functi
     return jsonify('You have added a new book.') #tells the user they have added a new book 
 
 @app.route('/book/get/<id>', methods=['GET']) #return one book end point, referenced Id to grab the requeted book
-def get_one_book(id): #
-    book = db.session.query(Book).filter(Book.id == id).first() #querying out book class and filtering out the ID that matches what the user provided
+def get_one_book(id): 
+    book = db.session.query(Book).filter(Book.id == id).first() #querying our book class and filtering out the ID that matches what the user provided
     return jsonify(book_schema.dump(book)) #returning the book that matched the ID, used .dump to make book_schema iterable
 
 
